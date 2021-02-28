@@ -3,7 +3,6 @@ use hyper::{Client, Request, StatusCode, Body, body};
 use structopt::StructOpt;
 use std::thread;
 use webbrowser::{self, BrowserOptions};
-use std::env;
 use home::home_dir;
 use std::path::{PathBuf};
 use std::fs;
