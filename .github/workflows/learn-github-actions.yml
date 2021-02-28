@@ -13,7 +13,7 @@ jobs:
           default: true
           override: true
       - name: build
-        run: bash ./ci/install.sh && bash ./build.sh && strip target/release/$PROJECT_NAME && mv target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$TARGET
+        run: bash ./ci/install.sh && bash ./ci/build.sh && strip target/release/$PROJECT_NAME && mv target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$TARGET
         env:
           PROJECT_NAME: scriptz # TODO: change this to your project name
           OS_NAME: linux
