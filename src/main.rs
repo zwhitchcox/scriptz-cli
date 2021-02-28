@@ -44,15 +44,14 @@ fn is_sh(str: String) -> bool {
 fn get_token_file() -> PathBuf {
   home_dir().unwrap().join(".scriptz").join("token")
 }
-
+#[cfg(debug_assertions)]
 fn get_origin() -> String {
-  let profile = env::var("PROFILE")
-    .unwrap_or(String::from("development"));
-  if profile == "release" {
-    return String::from("https://scriptz.sh")
-  } else {
-    return String::from("http://localhost:4000")
-  }
+  return String::from("http://localhost:4000")
+}
+
+#[cfg(not(debug_assertions))]
+fn get_origin() -> String {
+  return String::from("https://scriptz.sh")
 }
 
 fn get_token() -> String {
