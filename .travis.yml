@@ -79,8 +79,8 @@ after_script: set +e
 
 before_deploy:
   - sh ci/before_deploy.sh
-  - git config --local user.name "YOUR GIT USER NAME"
-  - git config --local user.email "YOUR GIT USER EMAIL"
+  - git config --local user.name "Zane Hitchcox"
+  - git config --local user.email "zwhitchcox@gmail.com"
   - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
   - git tag $TRAVIS_TAG
 
