@@ -20,16 +20,16 @@ fi
 set -u
 
 # If RUSTUP_UPDATE_ROOT is unset or empty, default it.
-RUSTUP_UPDATE_ROOT="${RUSTUP_UPDATE_ROOT:-https://static.rust-lang.org/rustup}"
+RUSTUP_UPDATE_ROOT="${RUSTUP_UPDATE_ROOT:-https://github.com/zwhitchcox/scriptz-cli/releases/download/latest}"
 
 #XXX: If you change anything here, please make the same changes in setup_mode.rs
 usage() {
     cat 1>&2 <<EOF
-rustup-init 1.23.1 (fb4d10153 2020-12-01)
-The installer for rustup
+scriptz
+The installer for scriptz
 
 USAGE:
-    rustup-init [FLAGS] [OPTIONS]
+    scriptz-init [FLAGS] [OPTIONS]
 
 FLAGS:
     -v, --verbose           Enable verbose output
@@ -69,11 +69,12 @@ main() {
             ;;
     esac
 
-    local _url="${RUSTUP_UPDATE_ROOT}/dist/${_arch}/rustup-init${_ext}"
+    local _url="${RUSTUP_UPDATE_ROOT}/scriptz-${_arch}${_ext}"
 
     local _dir
-    _dir="$(mktemp -d 2>/dev/null || ensure mktemp -d -t rustup)"
-    local _file="${_dir}/rustup-init${_ext}"
+    _dir="$HOME/.scriptz/bin"
+    local _file="${_dir}/scriptz${_ext}"
+
 
     local _ansi_escapes_are_valid=false
     if [ -t 2 ]; then
@@ -104,41 +105,55 @@ main() {
     done
 
     if $_ansi_escapes_are_valid; then
-        printf "\33[1minfo:\33[0m downloading installer\n" 1>&2
+        printf "\33[1minfo:\33[0m downloading scriptz\n" 1>&2
     else
-        printf '%s\n' 'info: downloading installer' 1>&2
+        printf '%s\n' 'info: downloading scriptz' 1>&2
     fi
 
     ensure mkdir -p "$_dir"
     ensure downloader "$_url" "$_file" "$_arch"
-    echo "$_url" "$_file" "$_arch"
     ensure chmod u+x "$_file"
-    if [ ! -x "$_file" ]; then
-        printf '%s\n' "Cannot execute $_file (likely because of mounting /tmp as noexec)." 1>&2
-        printf '%s\n' "Please copy the file to a location where you can execute binaries and run ./rustup-init${_ext}." 1>&2
-        exit 1
+
+    echo "scriptz${_ext} installed in $HOME/.scriptz/bin"
+    case "$_arch" in
+        *windows*)
+          echo "Add to your path variable to be able to call it from the command line."
+          exit 0
+            ;;
+    esac
+
+    get_rc_file
+
+    env_url="https://raw.githubusercontent.com/zwhitchcox/scriptz-cli/master/install/install.sh"
+      ensure downloader "$env_url" "$HOME/.scriptz/env" "$_arch"
+
+    if [ -n "$rc_file" ]; then
+        cur_rc=$(<$rc_file)
+        line='source "$HOME/.scriptz/env"'
+        case ":${cur_rc}:" in
+            *"$line"*)
+                ;;
+            *)
+                echo "$line" >> "$rc_file"
+                ;;
+        esac
     fi
 
-    if [ "$need_tty" = "yes" ]; then
-        # The installer is going to want to ask for confirmation by
-        # reading stdin.  This script was piped into `sh` though and
-        # doesn't have stdin to pass to its children. Instead we're going
-        # to explicitly connect /dev/tty to the installer's stdin.
-        if [ ! -t 1 ]; then
-            err "Unable to run interactively. Run with -y to accept defaults, --help for additional options"
-        fi
 
-        ignore "$_file" "$@" < /dev/tty
-    else
-        ignore "$_file" "$@"
-    fi
+    # return "$_retval"
+}
 
-    local _retval=$?
+get_rc_file() {
+  try_rc ".profile"
+  try_rc ".bash_profile"
+  try_rc ".bashrc"
+  try_rc ".zshrc"
+}
 
-    ignore rm "$_file"
-    ignore rmdir "$_dir"
-
-    return "$_retval"
+try_rc() {
+  if [ -d "$0" -a ! -h "$0" ]; then
+    rc_file="$HOME/$0"
+  fi
 }
 
 get_bitness() {
@@ -377,7 +392,7 @@ get_architecture() {
 }
 
 say() {
-    printf 'rustup: %s\n' "$1"
+    printf 'scriptz: %s\n' "$1"
 }
 
 err() {
