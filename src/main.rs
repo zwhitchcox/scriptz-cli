@@ -55,9 +55,7 @@ fn get_origin() -> String {
 }
 
 fn get_token() -> String {
-  let contents = fs::read_to_string(get_token_file())
-    .expect("You must be logged in to do that.");
-  return contents
+  fs::read_to_string(get_token_file()).unwrap_or(String::from(""))
 }
 async fn get_file(filename: String, token: String) -> String {
   let client = Client::new();
@@ -67,7 +65,6 @@ async fn get_file(filename: String, token: String) -> String {
     .header("Authorization", format!("Bearer {}", token))
     .body(Body::from(""))
     .unwrap();
-
 
   match client.request(req).await {
     Ok(res) => {
@@ -93,7 +90,7 @@ async fn get_file(filename: String, token: String) -> String {
 async fn make_temp_file(filename: String, file_contents: String)
   -> Result<PathBuf, io::Error> {
   let dir = std::env::temp_dir();
-  let file_path = dir.join(filename.clone());
+  let file_path = dir.join(str::replace(filename.clone().as_str(), "/", "_"));
   let str_path = file_path.clone().as_path().display().to_string();
   fs::create_dir(dir).ok();
   let mut new_file = File::create(str_path)?;
