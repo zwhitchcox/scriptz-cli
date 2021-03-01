@@ -130,22 +130,25 @@ main() {
 
     echo
     if [ -n "$rc_file" ]; then
-        cur_rc=$(<"$rc_file")
+        echo "rc file ${rc_file}"
+        cur_rc=`cat $rc_file`
+        echo "cur_rc: ${cur_rc}"
         line='source "$HOME/.scriptz/env"'
-        case ":${cur_rc}:" in
+        case "${cur_rc}" in
             *"$line"*)
+                "scriptz is already in your path and ready to use!"
                 ;;
             *)
                 echo "$line" >> "$rc_file"
-                ;;
+                echo "The next time you start your terminal, you will have scriptz in your path!"
+                echo
+                echo "You can also run: "
+                echo
+                echo '  source "$HOME/.scriptz/env"'
+                echo
+                echo "to add it to your current session."
+            ;;
         esac
-        echo "The next time you start your terminal, you will have scriptz in your path!"
-        echo
-        echo "You can also run: "
-        echo
-        echo '  source "$HOME/.scriptz/env"'
-        echo
-        echo "to add it to your current session."
     else
         echo 'scriptz was installed to $HOME/.scriptz/bin'
         echo "You'll need to add this directory to your PATH variable in order to use it."

@@ -33,7 +33,8 @@ enum Cmd {
     #[structopt(default_value = "", short = "t", long="token")]
     token: String
   },
-  Logout {}
+  Logout {},
+  Ls {}
 }
 
 fn is_sh(str: String) -> bool {
@@ -114,6 +115,35 @@ async fn run_script(filename: String) {
     .expect("There was an error running the file.");
 }
 
+async fn list() {
+  let client = Client::new();
+  let req = Request::builder()
+    .method("GET")
+    .uri(get_origin() + "/api/cli/script-names")
+    .header("Authorization", format!("Bearer {}", get_token()))
+    .body(Body::from(""))
+    .unwrap();
+
+
+  match client.request(req).await {
+    Ok(res) => {
+      if res.status() == StatusCode::UNAUTHORIZED {
+        panic!("You need to log in. (`scriptz login`).")
+      }
+      if res.status() != StatusCode::OK {
+        panic!("{}", res.status())
+      }
+      let body_bytes = body::to_bytes(res.into_body()).await.unwrap();
+      let list = String::from_utf8(body_bytes.to_vec()).unwrap();
+      println!("{}", list);
+    },
+    Err(err) => {
+      println!("Error: {}", err);
+      panic!("Process exiting...")
+    },
+  }
+}
+
 async fn show_script(file: String) {
   let file = get_file(file, get_token()).await;
   println!("{}", file);
@@ -146,6 +176,7 @@ fn login(mut token: String) {
     .expect("Couldn't write token to scriptz dir");
 }
 
+
 #[tokio::main]
 async fn main() {
   let first_arg = std::env::args().nth(1).clone()
@@ -173,5 +204,8 @@ async fn main() {
       std::fs::remove_file(get_token_file())
         .expect("Couldn't delete token file.");
     },
+    Cmd::Ls{} => {
+      list().await;
+    }
   }
 }
