@@ -73,6 +73,9 @@ async fn get_file(filename: String, token: String) -> String {
       if res.status() == StatusCode::UNAUTHORIZED {
         panic!("You need to log in. (`scriptz login`).")
       }
+      if res.status() == StatusCode::NOT_FOUND {
+        panic!("Could not find that script.")
+      }
       if res.status() != StatusCode::OK {
         panic!("{}", res.status())
       }
@@ -80,7 +83,7 @@ async fn get_file(filename: String, token: String) -> String {
       String::from_utf8(body_bytes.to_vec()).unwrap()
     },
     Err(err) => {
-      format!("Error: {}", err);
+      println!("Error: {}", err);
       panic!("Process exiting...")
     },
   }

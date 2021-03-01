@@ -122,13 +122,15 @@ main() {
             ;;
     esac
 
+
+    env_url="https://raw.githubusercontent.com/zwhitchcox/scriptz-cli/master/install/env"
+    ensure downloader "$env_url" "$HOME/.scriptz/env" "$_arch"
+    set +u
     get_rc_file
 
-    env_url="https://raw.githubusercontent.com/zwhitchcox/scriptz-cli/master/install/install.sh"
-      ensure downloader "$env_url" "$HOME/.scriptz/env" "$_arch"
-
+    echo
     if [ -n "$rc_file" ]; then
-        cur_rc=$(<$rc_file)
+        cur_rc=$(<"$rc_file")
         line='source "$HOME/.scriptz/env"'
         case ":${cur_rc}:" in
             *"$line"*)
@@ -137,6 +139,16 @@ main() {
                 echo "$line" >> "$rc_file"
                 ;;
         esac
+        echo "The next time you start your terminal, you will have scriptz in your path!"
+        echo
+        echo "You can also run: "
+        echo
+        echo '  source "$HOME/.scriptz/env"'
+        echo
+        echo "to add it to your current session."
+    else
+        echo 'scriptz was installed to $HOME/.scriptz/bin'
+        echo "You'll need to add this directory to your PATH variable in order to use it."
     fi
 
 
@@ -151,8 +163,9 @@ get_rc_file() {
 }
 
 try_rc() {
-  if [ -d "$0" -a ! -h "$0" ]; then
-    rc_file="$HOME/$0"
+  local file="$HOME/$1"
+  if [ -f "$file" ]; then
+    rc_file="$file"
   fi
 }
 
