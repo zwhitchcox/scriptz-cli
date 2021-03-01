@@ -51,7 +51,7 @@ fn get_origin() -> String {
 
 #[cfg(not(debug_assertions))]
 fn get_origin() -> String {
-  return String::from("https://scriptz.sh")
+  return String::from("http://scriptz.sh")
 }
 
 fn get_token() -> String {

@@ -132,7 +132,6 @@ main() {
     if [ -n "$rc_file" ]; then
         echo "rc file ${rc_file}"
         cur_rc=`cat $rc_file`
-        echo "cur_rc: ${cur_rc}"
         line='source "$HOME/.scriptz/env"'
         case "${cur_rc}" in
             *"$line"*)
