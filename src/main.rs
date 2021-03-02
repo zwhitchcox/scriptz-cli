@@ -9,6 +9,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{self, Write};
 use std::process::{Command};
+use serde_json::{Value, json};
 
 
 
@@ -34,7 +35,13 @@ enum Cmd {
     token: String
   },
   Logout {},
-  Ls {}
+  Ls {},
+  AddKey {
+    #[structopt(required = true)]
+    name: String,
+    #[structopt(required = true)]
+    file: String,
+  }
 }
 
 fn is_sh(str: String) -> bool {
@@ -173,6 +180,44 @@ fn login(mut token: String) {
     .expect("Couldn't write token to scriptz dir");
 }
 
+async fn send_post(endpoint: String, value: Value) {
+  let req = Request::post(get_origin() + endpoint.as_str())
+    .header("Authorization", format!("Bearer {}", get_token()))
+    .header("Content-Type", "application/json")
+    .body(Body::from(serde_json::to_string(&value).unwrap()))
+    .unwrap();
+
+  let client = Client::new();
+  match client.request(req).await {
+    Ok(res) => {
+      let status = res.status();
+      let body_bytes = body::to_bytes(res.into_body()).await.unwrap();
+      let response = String::from_utf8(body_bytes.to_vec()).unwrap();
+      println!("{}", response);
+      if status == StatusCode::UNAUTHORIZED {
+        panic!("You need to log in. (`scriptz login`).")
+      }
+      if status != StatusCode::OK {
+        panic!("{}", status)
+      }
+    },
+    Err(err) => {
+      println!("Error: {}", err);
+      panic!("Process exiting...")
+    },
+  }
+}
+
+async fn add_key(name: String, file: String) {
+  println!("Adding key: {}, {}", name, file);
+  let contents = fs::read_to_string(file)
+    .expect("Something went wrong reading the key file");
+  send_post(String::from("/api/gh/add-ssh-key"), json!({
+    "key": contents,
+    "name": name,
+  })).await;
+}
+
 
 #[tokio::main]
 async fn main() {
@@ -203,6 +248,9 @@ async fn main() {
     },
     Cmd::Ls{} => {
       list().await;
+    },
+    Cmd::AddKey{ name, file } => {
+      add_key(name, file).await;
     }
   }
 }

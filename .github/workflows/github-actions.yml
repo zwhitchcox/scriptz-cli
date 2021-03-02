@@ -5,72 +5,80 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/checkout@v2
       - name: Install latest rust toolchain
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           default: true
           override: true
       - name: build
+        if: startsWith(github.ref, 'refs/tags/')
         run: bash ./ci/install.sh && bash ./ci/build.sh
         env:
           PROJECT_NAME: scriptz # TODO: change this to your project name
           OS_NAME: linux
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            target/release/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_NAME: scriptz # TODO: change this to your project name
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install latest rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-          override: true
-      - name: build
-        run: bash ./ci/install.sh && bash ./ci/build.sh
-        env:
-          PROJECT_NAME: scriptz # TODO: change this to your project name
-          OS_NAME: macos
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            target/release/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PROJECT_NAME: scriptz # TODO: change this to your project name
-  build-win:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+          overwrite: true
+          file_glob: target/release/*
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
 
-      - name: Install latest rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          default: true
-          override: true
+  # build-mac:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions/checkout@v2
+  #     - name: Install latest rust toolchain
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         default: true
+  #         override: true
+  #     - name: build
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       run: bash ./ci/install.sh && bash ./ci/build.sh
+  #       env:
+  #         PROJECT_NAME: scriptz # TODO: change this to your project name
+  #         OS_NAME: macos
+  #     - name: Release
+  #       uses: svenstaro/upload-release-action@v2
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         overwrite: true
+  #         file_glob: target/release/*
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         tag: ${{ github.ref }}
+  # build-win:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions/checkout@v1
 
-      - name: Build
-        run: cargo build --all --release
+  #     - name: Install latest rust toolchain
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         default: true
+  #         override: true
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: target/release/scriptz.exe # TODO: change this to your project name
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Build
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       run: cargo build --all --release
+  #     - name: Release
+  #       uses: svenstaro/upload-release-action@v2
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         overwrite: true
+  #         file_glob: target/release/*
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         tag: ${{ github.ref }}
