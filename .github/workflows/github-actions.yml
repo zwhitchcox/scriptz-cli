@@ -25,60 +25,62 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           overwrite: true
-          file_glob: target/release/*
+          file: target/release/*
+          file_glob: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v2
+      - name: Install latest rust toolchain
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          override: true
+      - name: build
+        if: startsWith(github.ref, 'refs/tags/')
+        run: bash ./ci/install.sh && bash ./ci/build.sh
+        env:
+          PROJECT_NAME: scriptz # TODO: change this to your project name
+          OS_NAME: macos
+      - name: Release
+        uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          overwrite: true
+          file: target/release/*
+          file_glob: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v1
 
-  # build-mac:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Checkout
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       uses: actions/checkout@v2
-  #     - name: Install latest rust toolchain
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         default: true
-  #         override: true
-  #     - name: build
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       run: bash ./ci/install.sh && bash ./ci/build.sh
-  #       env:
-  #         PROJECT_NAME: scriptz # TODO: change this to your project name
-  #         OS_NAME: macos
-  #     - name: Release
-  #       uses: svenstaro/upload-release-action@v2
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       with:
-  #         overwrite: true
-  #         file_glob: target/release/*
-  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-  #         tag: ${{ github.ref }}
-  # build-win:
-  #   runs-on: windows-latest
-  #   steps:
-  #     - name: Checkout
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       uses: actions/checkout@v1
+      - name: Install latest rust toolchain
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          default: true
+          override: true
 
-  #     - name: Install latest rust toolchain
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: stable
-  #         default: true
-  #         override: true
-
-  #     - name: Build
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       run: cargo build --all --release
-  #     - name: Release
-  #       uses: svenstaro/upload-release-action@v2
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #       with:
-  #         overwrite: true
-  #         file_glob: target/release/*
-  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-  #         tag: ${{ github.ref }}
+      - name: Build
+        if: startsWith(github.ref, 'refs/tags/')
+        run: cargo build --all --release
+      - name: Release
+        uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          overwrite: true
+          file: target/release/*
+          file_glob: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
