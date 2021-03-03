@@ -75,17 +75,19 @@ async fn get_file(filename: String, token: String) -> String {
 
   match client.request(req).await {
     Ok(res) => {
-      if res.status() == StatusCode::UNAUTHORIZED {
-        panic!("You need to log in. (`scriptz login`).")
-      }
-      if res.status() == StatusCode::NOT_FOUND {
-        panic!("Could not find that script.")
-      }
-      if res.status() != StatusCode::OK {
-        panic!("{}", res.status())
-      }
+      let status = res.status();
       let body_bytes = body::to_bytes(res.into_body()).await.unwrap();
-      String::from_utf8(body_bytes.to_vec()).unwrap()
+      let result = String::from_utf8(body_bytes.to_vec()).unwrap();
+      if status == StatusCode::UNAUTHORIZED {
+        panic!(result)
+      }
+      if status == StatusCode::NOT_FOUND {
+        panic!(result)
+      }
+      if status != StatusCode::OK {
+        panic!("{}", status)
+      }
+      result
     },
     Err(err) => {
       println!("Error: {}", err);
