@@ -9,6 +9,7 @@ main() {
         export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
         target=x86_64-unknown-linux-musl
         ls $PKG_CONFIG_PATH
+        sort=sort
     else
         brew install coreutils
         target=x86_64-apple-darwin
