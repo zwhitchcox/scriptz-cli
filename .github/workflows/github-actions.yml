@@ -131,9 +131,9 @@ jobs:
 
           # Set an output parameter `uname` for use in subsequent steps
           run: |
+            apt-get install libssl-dev pkg-config curl
+            apt-get install openssl
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            sudo apt-get install libssl-dev pkg-config
-            sudo apt-get install openssl
             cargo build --release
 
 
