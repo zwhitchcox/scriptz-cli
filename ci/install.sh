@@ -5,6 +5,7 @@ main() {
     if [ $OS_NAME = linux ]; then
         sudo apt-get install libssldev libssl-dev pkg-config
         sudo apt-get install openssl
+        export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
         target=x86_64-unknown-linux-musl
         sort=sort
     else
