@@ -4,6 +4,7 @@ main() {
     local target=
     if [ $OS_NAME = linux ]; then
         sudo apt-get install libssl-dev
+        sudo apt-get install openssl
         target=x86_64-unknown-linux-musl
         sort=sort
     else
