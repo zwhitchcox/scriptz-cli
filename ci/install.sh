@@ -3,6 +3,7 @@ set -ex
 main() {
     local target=
     if [ $OS_NAME = linux ]; then
+        apt-get install libssl-dev
         target=x86_64-unknown-linux-musl
         sort=sort
     else
