@@ -1,5 +1,6 @@
 set -ex
 
+
 main() {
     local target=
     if [ $OS_NAME = linux ]; then
