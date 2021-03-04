@@ -25,6 +25,8 @@ main() {
       x86_64-apple-darwin
     )
   fi
+  ls $PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
   for target in "${targets[@]}"; do
     echo building $target
     cross build --target $target --release

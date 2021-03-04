@@ -7,7 +7,6 @@ main() {
         sudo apt-get install libssl-dev pkg-config
         sudo apt-get install openssl
         target=x86_64-unknown-linux-musl
-        ls $PKG_CONFIG_PATH
         sort=sort
     else
         brew install coreutils
