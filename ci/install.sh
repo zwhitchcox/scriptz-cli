@@ -7,7 +7,7 @@ main() {
         sudo apt-get install openssl
         export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
         target=x86_64-unknown-linux-musl
-        tree /usr/lib
+        ls /usr/lib
         sort=sort
     else
         brew install coreutils
