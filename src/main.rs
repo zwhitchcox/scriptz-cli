@@ -12,7 +12,6 @@ use std::process::{Command};
 use serde_json::{Value, json};
 
 
-
 #[derive(StructOpt, Debug)]
 #[structopt(about = "run scripts from scriptz.sh")]
 struct Cli {
@@ -53,7 +52,7 @@ fn get_token_file() -> PathBuf {
 }
 #[cfg(debug_assertions)]
 fn get_origin() -> String {
-  return String::from("http://localhost:4000")
+  return String::from("https://scriptz.sh")
 }
 
 #[cfg(not(debug_assertions))]
@@ -64,36 +63,28 @@ fn get_origin() -> String {
 fn get_token() -> String {
   fs::read_to_string(get_token_file()).unwrap_or(String::from(""))
 }
-async fn get_file(filename: String, token: String) -> String {
-  let client = Client::new();
-  let req = Request::builder()
-    .method("GET")
-    .uri(get_origin() + "/d/" + filename.as_str())
+async fn get_file(filename: String, token: String) ->
+  Result<String, reqwest::Error> {
+  let client = reqwest::Client::new();
+  let url = get_origin() + "/d/" + &filename.as_str();
+  let res = client
+    .get(&url)
     .header("Authorization", format!("Bearer {}", token))
-    .body(Body::from(""))
-    .unwrap();
+    .send()
+    .await?;
 
-  match client.request(req).await {
-    Ok(res) => {
-      let status = res.status();
-      let body_bytes = body::to_bytes(res.into_body()).await.unwrap();
-      let result = String::from_utf8(body_bytes.to_vec()).unwrap();
-      if status == StatusCode::UNAUTHORIZED {
-        panic!(result)
-      }
-      if status == StatusCode::NOT_FOUND {
-        panic!(result)
-      }
-      if status != StatusCode::OK {
-        panic!("{}", status)
-      }
-      result
-    },
-    Err(err) => {
-      println!("Error: {}", err);
-      panic!("Process exiting...")
-    },
+  let status = res.status();
+  let text = res.text().await?;
+  if status == StatusCode::UNAUTHORIZED {
+    panic!(text)
   }
+  if status == StatusCode::NOT_FOUND {
+    panic!(text)
+  }
+  if status != StatusCode::OK {
+    panic!("{}", text)
+  }
+  Ok(text)
 }
 
 async fn make_temp_file(filename: String, file_contents: String)
@@ -109,8 +100,8 @@ async fn make_temp_file(filename: String, file_contents: String)
 }
 
 
-async fn run_script(filename: String) {
-  let file_contents = get_file(filename.clone(), get_token()).await;
+async fn run_script(filename: String) -> Result<(), reqwest::Error> {
+  let file_contents = get_file(filename.clone(), get_token()).await?;
   let temp_file = make_temp_file(filename.clone(), file_contents.clone()).await
     .expect("Couldn't make temporary file.");
   let child = Command::new("bash")
@@ -119,6 +110,7 @@ async fn run_script(filename: String) {
     .expect("The script failed.");
   child.wait_with_output()
     .expect("There was an error running the file.");
+  Ok(())
 }
 
 async fn list() {
@@ -152,7 +144,7 @@ async fn list() {
 
 async fn show_script(file: String) {
   let file = get_file(file, get_token()).await;
-  println!("{}", file);
+  println!("{}", file.unwrap());
 }
 
 fn login(mut token: String) {
@@ -220,9 +212,8 @@ async fn add_key(name: String, file: String) {
   })).await;
 }
 
-
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), ()> {
   let first_arg = std::env::args().nth(1).clone()
     .expect("You must type a command. Type --help for usage.");
   let cmd: Cmd;
@@ -237,22 +228,28 @@ async fn main() {
   match cmd {
     Cmd::Run{ file } => {
       run_script(file).await;
+      Ok(())
     },
     Cmd::Show{ file } => {
       show_script(file).await;
+      Ok(())
     },
     Cmd::Login{ token } => {
       login(token);
+      Ok(())
     },
     Cmd::Logout{} => {
       std::fs::remove_file(get_token_file())
         .expect("Couldn't delete token file.");
+      Ok(())
     },
     Cmd::Ls{} => {
       list().await;
+      Ok(())
     },
     Cmd::AddKey{ name, file } => {
       add_key(name, file).await;
+      Ok(())
     }
   }
 }
