@@ -16,10 +16,12 @@ jobs:
           override: true
       - name: build
         if: startsWith(github.ref, 'refs/tags/')
+
         run: bash ./ci/install.sh && bash ./ci/build.sh
         env:
           PROJECT_NAME: scriptz # TODO: change this to your project name
           OS_NAME: linux
+          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig
       - name: Release
         uses: svenstaro/upload-release-action@v2
         if: startsWith(github.ref, 'refs/tags/')
