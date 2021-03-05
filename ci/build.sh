@@ -29,6 +29,7 @@ main() {
     armv7-unknown-linux-gnueabihf
   )
   ls
+  echo $PWD
   for target in "${docker_targets[@]}"; do
     arch=$(echo $target | sed 's/-*//g')
     docker build . -t runner -f ./ci/"$target".Dockerfile
