@@ -28,6 +28,7 @@ main() {
     aarch64-unknown-linux-gnu
     armv7-unknown-linux-gnueabihf
   )
+  ls
   for target in "${docker_targets[@]}"; do
     arch=$(echo $target | sed 's/-*//g')
     docker build . -t runner -f ./ci/"$target".Dockerfile
