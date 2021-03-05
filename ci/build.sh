@@ -3,11 +3,25 @@
 set -ex
 
 main() {
-  local targets=
+  # local targets=
+  local target=
   if [ "$OS_NAME" == "linux" ]; then
+    docker_targets=(
+      aarch64-unknown-linux-gnu
+      armv7-unknown-linux-gnueabihf
+    )
+    ls
+    for target in "${docker_targets[@]}"; do
+      arch=$(echo $target | sed 's/-.*//')
+      docker build . -t runner -f ./ci/"$arch".Dockerfile
+      docker run -v $PWD:/home/src runner
+      sudo mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
+    done
+    sudo chown -R $USER:$USER .
+    target=x86_64-unknown-linux-gnu
     targets=(
-      x86_64-unknown-linux-gnu
-      x86_64-unknown-linux-musl
+      # x86_64-unknown-linux-gnu
+      # x86_64-unknown-linux-musl
       # aarch64-unknown-linux-gnu
       # armv7-unknown-linux-gnueabihf
       # arm-unknown-linux-gnueabi
@@ -20,25 +34,12 @@ main() {
       # s390x-unknown-linux-gnu DISABLE_TESTS=1
     )
   else
-    targets=(
-      x86_64-apple-darwin
-    )
+    target=x86_64-apple-darwin
+    # targets=(
+    #   x86_64-apple-darwin
+    # )
   fi
-  docker_targets=(
-    aarch64-unknown-linux-gnu
-    armv7-unknown-linux-gnueabihf
-  )
-  ls
-  echo $PWD
-  for target in "${docker_targets[@]}"; do
-    arch=$(echo $target | sed 's/-.*//')
-    docker build . -t runner -f ./ci/"$arch".Dockerfile
-    docker run -v $PWD:/home/src runner
-    sudo mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
-  done
-  sudo chown -R $USER:$USER .
 
-  target="x86_64-unknown-linux-gnu"
   cargo build --release
   mv target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
 }
