@@ -32,7 +32,7 @@ main() {
   echo $PWD
   for target in "${docker_targets[@]}"; do
     arch=$(echo $target | sed 's/-*//g')
-    docker build . -t runner -f ./ci/"$target".Dockerfile
+    docker build . -t runner -f ./ci/"$arch".Dockerfile
     docker run -v $PWD:/home/src runner
     mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
   done
