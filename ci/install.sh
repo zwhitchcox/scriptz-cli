@@ -4,7 +4,7 @@ set -ex
 main() {
     local target=
     if [ $OS_NAME = linux ]; then
-        sudo apt install libssl-dev pkgconfig openssl -y
+        sudo apt install libssl-dev pkg-config openssl -y
         target=x86_64-unknown-linux-musl
         sort=sort
     else
