@@ -16,7 +16,7 @@ main() {
     for arch in "${architectures[@]}"; do
       sudo dpkg --add-architecture $arch
     done
-    apt update
+    suod apt update
     for arch in "${architectures[@]}"; do
       sudo apt-get update && \
           sudo apt-get install --assume-yes libssl-dev:"$arch"
