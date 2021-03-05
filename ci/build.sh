@@ -31,7 +31,7 @@ main() {
   ls
   echo $PWD
   for target in "${docker_targets[@]}"; do
-    arch=$(echo $target | sed 's/-*//')
+    arch=$(echo $target | sed 's/-.*//')
     docker build . -t runner -f ./ci/"$arch".Dockerfile
     docker run -v $PWD:/home/src runner
     mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
