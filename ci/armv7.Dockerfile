@@ -5,7 +5,7 @@ WORKDIR /home/src
 RUN dpkg --add-architecture armhf
 
 RUN apt-get update && \
-    apt-get install --assume-yes libasound2-dev:armhf libssl-dev:armhf
+    apt-get install --assume-yes libssl-dev:armhf
 
 ENV PKG_CONFIG_LIBDIR=/usr/local/lib/arm-linux-gnueabihf/pkgconfig:/usr/lib/arm-linux-gnueabihf/pkgconfig
 

@@ -1,32 +1,16 @@
 # This script takes care of testing your crate
 
-set -x
+set -ex
 
 main() {
   local targets=
   if [ "$OS_NAME" == "linux" ]; then
-    if grep -i ubuntu /etc/os-release >/dev/null; then
-        sed 's/http:\/\/\(.*\).ubuntu.com\/ubuntu\//[arch-=amd64,i386] http:\/\/ports.ubuntu.com\/ubuntu-ports\//g' /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/ports.list
-        sudo sed -i 's/http:\/\/\(.*\).ubuntu.com\/ubuntu\//[arch=amd64,i386] http:\/\/\1.archive.ubuntu.com\/ubuntu\//g' /etc/apt/sources.list
-    fi
-    architectures=(
-      armhf
-      arm64
-    )
-    for arch in "${architectures[@]}"; do
-      sudo dpkg --add-architecture $arch
-    done
-    sudo apt update
-    for arch in "${architectures[@]}"; do
-      sudo apt-get update && \
-          sudo apt-get install --assume-yes libssl-dev:"$arch"
-    done
-
     targets=(
-      aarch64-unknown-linux-gnu
       x86_64-unknown-linux-gnu
+      x86_64-unknown-linux-musl
+      # aarch64-unknown-linux-gnu
+      # armv7-unknown-linux-gnueabihf
       # arm-unknown-linux-gnueabi
-      armv7-unknown-linux-gnueabihf
       # i686-unknown-linux-gnu
       # i686-unknown-linux-musl
       # mips-unknown-linux-gnu
@@ -34,21 +18,27 @@ main() {
       # mips64el-unknown-linux-gnuabi64
       # mipsel-unknown-linux-gnu
       # s390x-unknown-linux-gnu DISABLE_TESTS=1
-      x86_64-unknown-linux-musl
     )
   else
     targets=(
       x86_64-apple-darwin
     )
   fi
+  docker_targets=(
+    aarch64-unknown-linux-gnu
+    armv7-unknown-linux-gnueabihf
+  )
+  for target in "${docker_targets[@]}"; do
+    arch=$(echo $target | sed 's/-*//g')
+    docker build . -t runner -f ./ci/"$target".Dockerfile
+    docker run -v $PWD:/home/src runner
+    mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
+  done
+
   # export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
   for target in "${targets[@]}"; do
-    local PKG_CONFIG_PATH=
-    if [ "$OS_NAME" == "linux" ]; then
-      PKG_CONFIG_PATH=/usr/local/lib/$(echo $target | sed 's/-unknown//')
-    fi
-      cross build --target $target --release
-      mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
+    cross build --target $target --release
+    mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
   done
 }
 
