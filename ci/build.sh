@@ -38,11 +38,9 @@ main() {
   done
   sudo chown -R $USER:$USER .
 
-  export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
-  for target in "${targets[@]}"; do
-    cross build --target $target --release
-    mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
-  done
+  target="x86_64-unknown-linux-gnu"
+  cargo build --release
+  mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
 }
 
 main
