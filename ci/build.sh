@@ -1,6 +1,6 @@
 # This script takes care of testing your crate
 
-set -ex
+set -x
 
 main() {
   local targets=
