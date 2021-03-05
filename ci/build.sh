@@ -40,7 +40,7 @@ main() {
 
   target="x86_64-unknown-linux-gnu"
   cargo build --release
-  mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
+  mv target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
 }
 
 main
