@@ -14,13 +14,12 @@ main() {
       arm64
     )
     for arch in "${architectures[@]}"; do
-      dpkg --add-architecture $arch
+      sudo dpkg --add-architecture $arch
     done
     apt update
     for arch in "${architectures[@]}"; do
-      dpkg --add-architecture $arch
-      apt-get update && \
-          apt-get install --assume-yes libssl-dev:"$arch"
+      sudo apt-get update && \
+          sudo apt-get install --assume-yes libssl-dev:"$arch"
     done
 
     targets=(
@@ -44,10 +43,10 @@ main() {
   fi
   # export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
   for target in "${targets[@]}"; do
-    # local PKG_CONFIG_PATH=
-    # if [ "$OS_NAME" == "linux" ]; then
-    #   PKG_CONFIG_PATH=$(echo $target | sed 's/-unknown//')
-    # fi
+    local PKG_CONFIG_PATH=
+    if [ "$OS_NAME" == "linux" ]; then
+      PKG_CONFIG_PATH=/usr/local/lib/$(echo $target | sed 's/-unknown//')
+    fi
       cross build --target $target --release
       mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
   done
