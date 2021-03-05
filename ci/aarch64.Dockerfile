@@ -7,8 +7,6 @@ RUN dpkg --add-architecture arm64
 RUN apt-get update && \
     apt-get install --assume-yes libssl-dev:arm64
 
-CMD tail -f /dev/null
-
 ENV PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig
 
 RUN curl https://sh.rustup.rs -sSf | \
