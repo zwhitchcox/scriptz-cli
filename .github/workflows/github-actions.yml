@@ -1,143 +1,87 @@
-# name: Rust
-# on: [push]
-# jobs:
-#   build-linux:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         include:
-#         - arch: aarch64
-#           distro: ubuntu
-#         - arch: x86_64
-#           distro: ubuntu
-#         - arch: armv7
-#           distro: ubuntu
-#     steps:
-#       - name: Checkout
-#         if: startsWith(github.ref, 'refs/tags/')
-#         uses: actions/checkout@v2
-#       - name: Install latest rust toolchain
-#         if: startsWith(github.ref, 'refs/tags/')
-#         uses: actions-rs/toolchain@v1
-#         with:
-#           arch: ${{ matrix.arch }}
-#           distro: ${{ matrix.distro }}
-#           toolchain: stable
-#           default: true
-#           override: true
-#       - name: build
-#         if: startsWith(github.ref, 'refs/tags/')
-
-#         run: bash ./ci/install.sh && bash ./ci/build.sh
-#         env:
-#           PROJECT_NAME: scriptz # TODO: change this to your project name
-#           OS_NAME: linux
-#           PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig
-#       - name: Release
-#         uses: svenstaro/upload-release-action@v2
-#         if: startsWith(github.ref, 'refs/tags/')
-#         with:
-#           overwrite: true
-#           file: target/release/*
-#           file_glob: true
-#           repo_token: ${{ secrets.GITHUB_TOKEN }}
-#           tag: ${{ github.ref }}
-
-#   # build-mac:
-#   #   runs-on: macos-latest
-#   #   steps:
-#   #     - name: Checkout
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       uses: actions/checkout@v2
-#   #     - name: Install latest rust toolchain
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       uses: actions-rs/toolchain@v1
-#   #       with:
-#   #         toolchain: stable
-#   #         default: true
-#   #         override: true
-#   #     - name: build
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       run: bash ./ci/install.sh && bash ./ci/build.sh
-#   #       env:
-#   #         PROJECT_NAME: scriptz # TODO: change this to your project name
-#   #         OS_NAME: macos
-#   #     - name: Release
-#   #       uses: svenstaro/upload-release-action@v2
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       with:
-#   #         overwrite: true
-#   #         file: target/release/*
-#   #         file_glob: true
-#   #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-#   #         tag: ${{ github.ref }}
-
-#   # build-win:
-#   #   runs-on: windows-latest
-#   #   steps:
-#   #     - name: Checkout
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       uses: actions/checkout@v1
-#   #     - name: Install latest rust toolchain
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       uses: actions-rs/toolchain@v1
-#   #       with:
-#   #         toolchain: stable
-#   #         default: true
-#   #         override: true
-#   #     - name: Build
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       run: cargo build --all --release
-#   #     - name: Release
-#   #       uses: svenstaro/upload-release-action@v2
-#   #       if: startsWith(github.ref, 'refs/tags/')
-#   #       with:
-#   #         overwrite: true
-#   #         file: target/release/*
-#   #         file_glob: true
-#   #         repo_token: ${{ secrets.GITHUB_TOKEN }}
-#   #         tag: ${{ github.ref }}
-
-on: [push, pull_request]
-
+name: Rust
+on: [push]
 jobs:
-  armv7_job:
-    # The host should always be Linux
-    runs-on: ubuntu-18.04
-    name: Build on ubuntu-18.04 armv7
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.1.0
-#       - name: Install latest rust toolchain
-#         if: startsWith(github.ref, 'refs/tags/')
-#         uses: actions-rs/toolchain@v1
-#         with:
-#           arch: ${{ matrix.arch }}
-#           distro: ${{ matrix.distro }}
-#           toolchain: stable
-#           default: true
-#           override: true
-      - uses: uraimo/run-on-arch-action@v2.0.5
-        name: Run commands
-        id: runcmd
+      - name: Checkout
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v2
+      - name: Install latest rust toolchain
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions-rs/toolchain@v1
         with:
-          arch: armv7
-          distro: ubuntu18.04
+          toolchain: stable
+          default: true
+          override: true
+      - name: build
+        if: startsWith(github.ref, 'refs/tags/')
 
-          # Not required, but speeds up builds by storing container images in
-          # a GitHub package registry.
-          githubToken: ${{ github.token }}
-          dockerRunArgs: |
-            --volume "${PWD}:/root"
+        run: bash ./ci/install.sh && bash ./ci/build.sh
+        env:
+          PROJECT_NAME: scriptz # TODO: change this to your project name
+          OS_NAME: linux
+      - name: Release
+        uses: svenstaro/upload-release-action@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          overwrite: true
+          file: target/release/*
+          file_glob: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
 
-          # Set an output parameter `uname` for use in subsequent steps
-          run: |
-            apt-get install libssl-dev pkg-config curl
-            apt-get install openssl
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            cargo build --release
+  # build-mac:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions/checkout@v2
+  #     - name: Install latest rust toolchain
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         default: true
+  #         override: true
+  #     - name: build
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       run: bash ./ci/install.sh && bash ./ci/build.sh
+  #       env:
+  #         PROJECT_NAME: scriptz # TODO: change this to your project name
+  #         OS_NAME: macos
+  #     - name: Release
+  #       uses: svenstaro/upload-release-action@v2
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         overwrite: true
+  #         file: target/release/*
+  #         file_glob: true
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         tag: ${{ github.ref }}
 
-
-      - name: Get the output
-        # Echo the `uname` output parameter from the `runcmd` step
-        run: |
-          echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
+  # build-win:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions/checkout@v1
+  #     - name: Install latest rust toolchain
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         default: true
+  #         override: true
+  #     - name: Build
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       run: cargo build --all --release
+  #     - name: Release
+  #       uses: svenstaro/upload-release-action@v2
+  #       if: startsWith(github.ref, 'refs/tags/')
+  #       with:
+  #         overwrite: true
+  #         file: target/release/*
+  #         file_glob: true
+  #         repo_token: ${{ secrets.GITHUB_TOKEN }}
+  #         tag: ${{ github.ref }}

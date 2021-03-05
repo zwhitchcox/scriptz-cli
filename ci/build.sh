@@ -2,10 +2,27 @@
 
 set -ex
 
-#         strip target/release/$PROJECT_NAME && mv target/$TARGET/release/$PROJECT_NAME target/release/$PROJECT_NAME-$TARGET
 main() {
   local targets=
   if [ "$OS_NAME" == "linux" ]; then
+    if grep -i ubuntu /etc/os-release >/dev/null; then
+        sed 's/http:\/\/\(.*\).ubuntu.com\/ubuntu\//[arch-=amd64,i386] http:\/\/ports.ubuntu.com\/ubuntu-ports\//g' /etc/apt/sources.list > /etc/apt/sources.list.d/ports.list
+        sed -i 's/http:\/\/\(.*\).ubuntu.com\/ubuntu\//[arch=amd64,i386] http:\/\/\1.archive.ubuntu.com\/ubuntu\//g' /etc/apt/sources.list
+    fi
+    architectures=(
+      armhf
+      arm64
+    )
+    for arch in "${architectures[@]}"; do
+      dpkg --add-architecture $arch
+    done
+    apt update
+    for arch in "${architectures[@]}"; do
+      dpkg --add-architecture $arch
+      apt-get update && \
+          apt-get install --assume-yes libssl-dev:"$arch"
+    done
+
     targets=(
       aarch64-unknown-linux-gnu
       x86_64-unknown-linux-gnu
@@ -25,12 +42,14 @@ main() {
       x86_64-apple-darwin
     )
   fi
-  ls $PKG_CONFIG_PATH
   export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
   for target in "${targets[@]}"; do
-    echo building $target
-    cross build --target $target --release
-    mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
+    local PKG_CONFIG_PATH=
+    if [ "$OS_NAME" == "linux" ]; then
+      PKG_CONFIG_PATH=$(echo $target | sed 's/-unknown//')
+    fi
+      cross build --target $target --release
+      mv target/$target/release/$PROJECT_NAME target/release/$PROJECT_NAME-$target
   done
 }
 
