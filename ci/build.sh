@@ -34,7 +34,7 @@ main() {
     arch=$(echo $target | sed 's/-.*//')
     docker build . -t runner -f ./ci/"$arch".Dockerfile
     docker run -v $PWD:/home/src runner
-    mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
+    sudo mv ./target/release/$PROJECT_NAME ./target/release/$PROJECT_NAME-$target
   done
 
   # export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
